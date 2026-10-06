@@ -1,0 +1,39 @@
+# Runtime parameters — loaded by the registry and passed as Graph(config=...).
+# Separate file from config/agent.yaml (the static manifest): agent.yaml is the
+# discovery entry point, this file is the agent's own runtime configuration,
+# keyed by whatever the graph and nodes read via self.config.get(...).
+
+max_retry: 3
+timeout_s: 30
+
+# Rule library for the selected regulatory profile. RuleLoad reads this file;
+# RegulatoryComplianceCheck applies the rules it returns.
+rules_path: "config/keihin_rules.yaml"
+regulatory_profile: "JP"
+enable_keihin_check: true
+
+# Price-consistency tuning. A price pair is flagged only when BOTH bounds are
+# exceeded: abs(delta) > tolerance_abs AND abs(delta)/reference > tolerance_pct.
+price:
+  tolerance_abs: 1.0
+  tolerance_pct: 0.001
+  # Claimed-vs-computed discount rate agreement band.
+  discount_rate_tolerance: 0.01
+
+# Image labels are not accepted; a label carrying an image field is refused
+# rather than silently ignored.
+accept_image_input: false
+
+llm:
+  model: "gpt-4o"
+  # Regulatory verdicts must be stable and repeatable across runs.
+  temperature: 0.0
+  max_tokens: 1024
+  prompt_path: "prompts/promotion_claim.md"
+
+report:
+  note: "for internal reporting purposes"
+
+security:
+  # Mandatory output gate. Construction fails when this is false.
+  output_gate_enabled: true

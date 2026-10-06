@@ -1,0 +1,34 @@
+# Agent Manifest — the registry's discovery entry point.
+# Every key below is read at ROOT level; a nested `agent:` block is invisible to
+# the loader and silently falls back to defaults. Runtime parameters do NOT live
+# here — the registry loads config/config.yaml separately and passes it to the
+# graph constructor as Graph(config=...).
+id: "RET-C2-017"
+name: "PriceLabelVerificationAgent"
+namespace: "ret"
+version: "0.1.0"
+enabled: true
+category: "Cat 2"
+# Static generation contract: this agent calls a language model to assess
+# promotional claim wording (see src/nodes/promotion_claim_check.py).
+generation_mode: "llm"
+industry: "RET"
+
+# Opaque compatibility metadata. Not an inheritance selector, not a gate input.
+base_type: "ChatAgent"
+
+# Entry point — one dotted import path (module.Class), never a split module:/class:.
+class: "src.graph.graph.PriceLabelVerificationAgent"
+
+# Security
+required_trust_level: "VERIFIED_EXTERNAL"
+
+# Compile-time gates. Declare every secret and extra actually used, or those
+# checks load silently disabled.
+# OPENAI_API_KEY is deliberately absent from requires.secrets: the loader
+# hard-fails when a declared secret is unprovisioned, while the HTTP adapter
+# reads the key with .get() and degrades to a model-less boot. Declaring it here
+# would contradict the adapter and break key-less compiles.
+requires:
+  secrets: []            # every ctx.secrets.require("KEY") call must be listed here
+  extras: ["openai"]     # the adapter constructs OpenAIClient; must exist in the extras map

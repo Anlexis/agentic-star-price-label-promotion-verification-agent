@@ -1,0 +1,45 @@
+# Advertising rule library — the JP regulatory profile.
+#
+# Rules are data, not code. When the regulations change, THIS file changes and
+# src/ does not: RuleLoad reads it and RegulatoryComplianceCheck dispatches on
+# the check_type each rule declares. A rule declaring an unsupported check_type
+# is reported for review rather than skipped, so an unsupported rule is visible
+# in the output instead of silently absent.
+#
+# Structure matters more than coverage here — this is a starting point, to be
+# replaced with the rule set that applies in your market.
+#
+# Each rule: id / name / description / check_type [/ params].
+#   price_reference       regular_price against sale_price
+#   claim_substantiation  the model's assessment of a superlative claim
+#   discount_accuracy     deterministic: claimed against computed discount
+#   prize_limit           numeric prize-value ceilings, driven by params
+
+rules:
+  - id: KH-001
+    name: 二重価格表示禁止
+    description: 実際の販売価格より高い参照価格（元値）の虚偽表示禁止
+    check_type: price_reference
+  - id: KH-002
+    name: 最安値・No.1表示
+    description: 「業界最安値」「日本一」等の表示は客観的根拠が必要
+    check_type: claim_substantiation
+  - id: KH-003
+    name: 割引率の正確性
+    description: 「最大XX%オフ」は実際の割引率と一致すること
+    check_type: discount_accuracy
+  - id: KH-004
+    name: 景品上限額（一般懸賞）
+    description: 1回あたり最大¥100,000、取引額の20倍以内
+    check_type: prize_limit
+    params: { max_abs: 100000, max_multiplier: 20 }
+  - id: KH-005
+    name: 景品上限額（総付景品）
+    description: 取引額200円未満は¥100以下、200円以上は取引額の10%以内
+    check_type: prize_limit
+    params: { threshold: 200, below_max: 100, above_pct: 0.10 }
+  - id: KH-006
+    name: プレゼント・おまけ上限
+    description: オープン懸賞は上限なし、クローズドは一般懸賞ルール適用（KH-004準拠）
+    check_type: prize_limit
+    params: { open_prize_unlimited: true }

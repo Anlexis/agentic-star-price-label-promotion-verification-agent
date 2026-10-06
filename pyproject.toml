@@ -1,0 +1,56 @@
+[project]
+name = "ret-c2-017"
+version = "0.1.0"
+description = "Retail price label and promotion verification agent"
+requires-python = ">=3.11"
+# The agent framework is installed from the platform wheel by the deployment,
+# not declared here. Runtime dependencies stay minimal and exact-pinned.
+dependencies = [
+    "agenticstar-agentcore[marketplace,openai]==1.0.3",
+    "pyyaml==6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.1.1",
+    "pytest-cov==5.0.0",
+    "pytest-asyncio==0.23.6",
+    "ruff==0.4.4",
+    "mypy==1.10.0",
+    "types-PyYAML==6.0.12.20240311",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+exclude = ["tests*", "docs*"]
+
+[build-system]
+requires = ["setuptools==68.2.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+# The framework ships untyped: its classes resolve to Any, so subclassing them
+# trips disallow_subclassing_any under strict. Relax exactly that flag and stop
+# following types into the framework and shared packages.
+disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+module = ["framework.*", "shared.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# The untyped framework makes AgentState resolve to Any, so the State subclass
+# fails valid-type on every field. One cause, many symptoms — disable the one
+# check rather than annotating around each field.
+module = ["src.schemas.state"]
+disable_error_code = ["valid-type"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
